@@ -2,7 +2,7 @@ import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
 import { useExec } from "@raycast/utils";
 import { useEffect, useMemo } from "react";
 
-import { type CalendarEvent, JXA_SCRIPT, formatTimeUntil, isEventPast, parseEvents, readCache, writeCache } from "./get-next-event";
+import { type CalendarEvent, JXA_SCRIPT, filterTodayOrTomorrow, formatTimeUntil, isEventPast, parseEvents, readCache, writeCache } from "./get-next-event";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -42,7 +42,7 @@ function getTimeColor(event: CalendarEvent): Color {
 export default function NextMeeting() {
   // 1. Read cache synchronously — instant render
   const cachedEvents = useMemo(() => {
-    return readCache().filter((e) => !isEventPast(e));
+    return filterTodayOrTomorrow(readCache().filter((e) => !isEventPast(e)));
   }, []);
 
   // 2. Fetch fresh data in background
@@ -56,7 +56,7 @@ export default function NextMeeting() {
   }, [freshData]);
 
   // Show fresh data if available, otherwise cached
-  const events = freshData ? parseEvents(freshData).filter((e) => !isEventPast(e)) : cachedEvents;
+  const events = freshData ? filterTodayOrTomorrow(parseEvents(freshData).filter((e) => !isEventPast(e))) : cachedEvents;
   const showLoading = cachedEvents.length === 0 && !freshData;
   const stale = !freshData && cachedEvents.length > 0;
 
