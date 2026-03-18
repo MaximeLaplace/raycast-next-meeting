@@ -29,8 +29,9 @@ function extractVideoLink(text: string): string | undefined {
 function getTimeColor(event: CalendarEvent): Color {
   if (event.isAllDay) return Color.Blue;
   const minutes = Math.floor((event.startTimestamp * 1000 - Date.now()) / 60_000);
-  if (minutes <= 5) return Color.Red;
-  if (minutes <= 15) return Color.Orange;
+  if (minutes <= 20) return Color.Red;
+  if (minutes <= 40) return Color.Orange;
+  if (minutes <= 60) return Color.Yellow;
   return Color.Green;
 }
 

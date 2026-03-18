@@ -10,7 +10,7 @@ A [Raycast](https://raycast.com) extension that shows your next calendar meeting
 
 - Reads events directly from macOS EventKit (no calendar permissions prompt)
 - Instant display via cache, with background refresh
-- Color-coded time indicator (green > 15m, orange > 5m, red < 5m)
+- Color-coded time indicator: green (> 1h), yellow (> 40m), orange (> 20m), red (< 20m)
 - Detects video call links (Google Meet, Zoom, Microsoft Teams) for one-click join
 - Background command updates the menu bar subtitle every 10 minutes
 
