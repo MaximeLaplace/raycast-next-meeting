@@ -1,12 +1,12 @@
 import { Cache } from "@raycast/api";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 
 // ---------------------------------------------------------------------------
 // JXA script — reads EventKit directly, no access request needed (~0.1s)
 // Looks ahead 7 days to always find the next event
 // ---------------------------------------------------------------------------
 
-const JXA_SCRIPT = `
+export const JXA_SCRIPT = `
 ObjC.import("EventKit");
 ObjC.import("Foundation");
 
@@ -67,7 +67,9 @@ export function parseEvent(output: string): CalendarEvent | null {
   const trimmed = output.trim();
   if (!trimmed || trimmed === "NONE") return null;
 
-  const [title, startTs, endTs, allDay, location, notes, url] = trimmed.split("|||");
+  const parts = trimmed.split("|||");
+  if (parts.length < 7) return null;
+  const [title, startTs, endTs, allDay, location, notes, url] = parts;
   return {
     title: title || "Untitled Meeting",
     startTimestamp: parseFloat(startTs),
@@ -80,7 +82,7 @@ export function parseEvent(output: string): CalendarEvent | null {
 }
 
 export function fetchNextEvent(): string {
-  return execSync(`osascript -l JavaScript -e '${JXA_SCRIPT.replace(/'/g, "'\\''")}'`, {
+  return execFileSync("osascript", ["-l", "JavaScript", "-e", JXA_SCRIPT], {
     encoding: "utf-8",
     timeout: 10000,
   }).trim();
@@ -104,4 +106,23 @@ export function isCacheStale(): boolean {
 
 export function isEventPast(event: CalendarEvent): boolean {
   return event.endTimestamp * 1000 < Date.now();
+}
+
+export function formatTimeUntil(timestamp: number): string {
+  const diffMs = timestamp * 1000 - Date.now();
+  if (diffMs <= 0) return "happening now";
+
+  const totalMinutes = Math.floor(diffMs / 60_000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours > 24) {
+    const days = Math.floor(hours / 24);
+    const remainingHours = hours % 24;
+    return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
+  }
+  if (hours > 0) {
+    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+  }
+  return `${minutes}m`;
 }
