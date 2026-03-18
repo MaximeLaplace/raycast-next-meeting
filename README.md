@@ -4,7 +4,7 @@
 
 # Next Meeting
 
-A [Raycast](https://raycast.com) extension that shows your next calendar meeting and how long until it starts.
+A [Raycast](https://raycast.com) extension that shows all your upcoming calendar meetings and how long until each one starts.
 
 ## Features
 
@@ -18,7 +18,7 @@ A [Raycast](https://raycast.com) extension that shows your next calendar meeting
 
 | Command | Description |
 |---------|-------------|
-| **Next Meeting** | Show your next calendar event with time, location, and video link |
+| **Next Meeting** | Show all upcoming calendar events with time, location, and video links |
 | **Refresh Calendar Cache** | Background task that keeps the subtitle up to date |
 
 ## Install

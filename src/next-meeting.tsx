@@ -2,7 +2,7 @@ import { Action, ActionPanel, Color, Icon, List } from "@raycast/api";
 import { useExec } from "@raycast/utils";
 import { useEffect, useMemo } from "react";
 
-import { type CalendarEvent, JXA_SCRIPT, formatTimeUntil, isEventPast, parseEvent, readCache, writeCache } from "./get-next-event";
+import { type CalendarEvent, JXA_SCRIPT, formatTimeUntil, isEventPast, parseEvents, readCache, writeCache } from "./get-next-event";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -41,9 +41,8 @@ function getTimeColor(event: CalendarEvent): Color {
 
 export default function NextMeeting() {
   // 1. Read cache synchronously — instant render
-  const cachedEvent = useMemo(() => {
-    const cached = readCache();
-    return cached && !isEventPast(cached) ? cached : null;
+  const cachedEvents = useMemo(() => {
+    return readCache().filter((e) => !isEventPast(e));
   }, []);
 
   // 2. Fetch fresh data in background
@@ -57,47 +56,50 @@ export default function NextMeeting() {
   }, [freshData]);
 
   // Show fresh data if available, otherwise cached
-  const event = freshData ? parseEvent(freshData) : cachedEvent;
-  const showLoading = !cachedEvent && !freshData;
-  const videoLink = event ? extractVideoLink(`${event.location} ${event.notes} ${event.url}`) : undefined;
-  const stale = !freshData && !!cachedEvent;
+  const events = freshData ? parseEvents(freshData).filter((e) => !isEventPast(e)) : cachedEvents;
+  const showLoading = cachedEvents.length === 0 && !freshData;
+  const stale = !freshData && cachedEvents.length > 0;
 
   return (
     <List isLoading={showLoading}>
-      {error && !cachedEvent && (
+      {error && cachedEvents.length === 0 && (
         <List.EmptyView icon={Icon.XMarkCircle} title="Failed to load calendar" description={error.message} />
       )}
-      {!showLoading && !error && !event && (
+      {!showLoading && !error && events.length === 0 && (
         <List.EmptyView icon={Icon.CheckCircle} title="No upcoming meetings" description="Your calendar is clear!" />
       )}
-      {event && (
-        <List.Item
-          icon={{ source: event.isAllDay ? Icon.Calendar : Icon.Clock, tintColor: getTimeColor(event) }}
-          title={event.title}
-          subtitle={event.isAllDay ? "All day" : `${formatTime(event.startTimestamp)} - ${formatTime(event.endTimestamp)}`}
-          accessories={[
-            ...(stale ? [{ tag: { value: "updating...", color: Color.SecondaryText } }] : []),
-            ...(event.location ? [{ icon: Icon.Pin, text: event.location }] : []),
-            ...(videoLink ? [{ icon: Icon.Video, tooltip: "Video call available" }] : []),
-            {
-              tag: {
-                value: event.isAllDay ? "all day" : `in ${formatTimeUntil(event.startTimestamp)}`,
-                color: getTimeColor(event),
+      {events.map((event, index) => {
+        const videoLink = extractVideoLink(`${event.location} ${event.notes} ${event.url}`);
+        return (
+          <List.Item
+            key={`${event.title}-${event.startTimestamp}`}
+            icon={{ source: event.isAllDay ? Icon.Calendar : Icon.Clock, tintColor: getTimeColor(event) }}
+            title={event.title}
+            subtitle={event.isAllDay ? "All day" : `${formatTime(event.startTimestamp)} - ${formatTime(event.endTimestamp)}`}
+            accessories={[
+              ...(stale && index === 0 ? [{ tag: { value: "updating...", color: Color.SecondaryText } }] : []),
+              ...(event.location ? [{ icon: Icon.Pin, text: event.location }] : []),
+              ...(videoLink ? [{ icon: Icon.Video, tooltip: "Video call available" }] : []),
+              {
+                tag: {
+                  value: event.isAllDay ? "all day" : `in ${formatTimeUntil(event.startTimestamp)}`,
+                  color: getTimeColor(event),
+                },
               },
-            },
-          ]}
-          actions={
-            <ActionPanel>
-              {videoLink && <Action.OpenInBrowser title="Join Video Call" url={videoLink} icon={Icon.Video} />}
-              <Action.CopyToClipboard
-                title="Copy Meeting Name"
-                content={event.title}
-                shortcut={{ modifiers: ["cmd"], key: "c" }}
-              />
-            </ActionPanel>
-          }
-        />
-      )}
+            ]}
+            actions={
+              <ActionPanel>
+                {videoLink && <Action.OpenInBrowser title="Join Video Call" url={videoLink} icon={Icon.Video} />}
+                <Action.CopyToClipboard
+                  title="Copy Meeting Name"
+                  content={event.title}
+                  shortcut={{ modifiers: ["cmd"], key: "c" }}
+                />
+              </ActionPanel>
+            }
+          />
+        );
+      })}
     </List>
   );
 }

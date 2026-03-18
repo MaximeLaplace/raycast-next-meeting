@@ -1,18 +1,19 @@
 import { updateCommandMetadata } from "@raycast/api";
 
-import { fetchNextEvent, formatTimeUntil, parseEvent, writeCache } from "./get-next-event";
+import { fetchEvents, formatTimeUntil, parseEvents, writeCache } from "./get-next-event";
 
 export default async function RefreshCache() {
   try {
-    const raw = fetchNextEvent();
+    const raw = fetchEvents();
     writeCache(raw);
 
-    const event = parseEvent(raw);
-    if (event && !event.isAllDay) {
-      const timeStr = formatTimeUntil(event.startTimestamp);
-      await updateCommandMetadata({ subtitle: `${event.title} - ${timeStr === "happening now" ? "now" : `in ${timeStr}`}` });
-    } else if (event) {
-      await updateCommandMetadata({ subtitle: `${event.title} - all day` });
+    const events = parseEvents(raw);
+    const next = events.find((e) => !e.isAllDay) ?? events[0];
+    if (next && !next.isAllDay) {
+      const timeStr = formatTimeUntil(next.startTimestamp);
+      await updateCommandMetadata({ subtitle: `${next.title} - ${timeStr === "happening now" ? "now" : `in ${timeStr}`}` });
+    } else if (next) {
+      await updateCommandMetadata({ subtitle: `${next.title} - all day` });
     } else {
       await updateCommandMetadata({ subtitle: "No upcoming meetings" });
     }

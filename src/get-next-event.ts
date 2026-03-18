@@ -23,24 +23,19 @@ if (events.count === 0) {
   var desc = $.NSSortDescriptor.sortDescriptorWithKeyAscending("startDate", true);
   var sorted = events.sortedArrayUsingDescriptors($.NSArray.arrayWithObject(desc));
 
-  // Skip all-day events to find the next timed event, fall back to first event
-  var picked = sorted.objectAtIndex(0);
+  var lines = [];
   for (var i = 0; i < sorted.count; i++) {
-    var candidate = sorted.objectAtIndex(i);
-    if (!candidate.isAllDay) {
-      picked = candidate;
-      break;
-    }
+    var e = sorted.objectAtIndex(i);
+    var title = (ObjC.unwrap(e.title) || "Untitled").replace(/\\n/g, " ");
+    var s = e.startDate.timeIntervalSince1970;
+    var en = e.endDate.timeIntervalSince1970;
+    var a = e.isAllDay;
+    var l = (ObjC.unwrap(e.location) || "").replace(/\\n/g, " ");
+    var n = (ObjC.unwrap(e.notes) || "").replace(/\\n/g, " ");
+    var u = e.URL ? ObjC.unwrap(e.URL.absoluteString) || "" : "";
+    lines.push(title + "|||" + s + "|||" + en + "|||" + a + "|||" + l + "|||" + n + "|||" + u);
   }
-
-  var title = ObjC.unwrap(picked.title) || "Untitled";
-  var s = picked.startDate.timeIntervalSince1970;
-  var en = picked.endDate.timeIntervalSince1970;
-  var a = picked.isAllDay;
-  var l = ObjC.unwrap(picked.location) || "";
-  var n = ObjC.unwrap(picked.notes) || "";
-  var u = picked.URL ? ObjC.unwrap(picked.URL.absoluteString) || "" : "";
-  title + "|||" + s + "|||" + en + "|||" + a + "|||" + l + "|||" + n + "|||" + u;
+  lines.join("\\n");
 }
 `;
 
@@ -81,16 +76,25 @@ export function parseEvent(output: string): CalendarEvent | null {
   };
 }
 
-export function fetchNextEvent(): string {
+export function parseEvents(output: string): CalendarEvent[] {
+  const trimmed = output.trim();
+  if (!trimmed || trimmed === "NONE") return [];
+  return trimmed
+    .split("\n")
+    .map((line) => parseEvent(line))
+    .filter((e): e is CalendarEvent => e !== null);
+}
+
+export function fetchEvents(): string {
   return execFileSync("osascript", ["-l", "JavaScript", "-e", JXA_SCRIPT], {
     encoding: "utf-8",
     timeout: 10000,
   }).trim();
 }
 
-export function readCache(): CalendarEvent | null {
+export function readCache(): CalendarEvent[] {
   const raw = cache.get(CACHE_KEY);
-  return raw ? parseEvent(raw) : null;
+  return raw ? parseEvents(raw) : [];
 }
 
 export function writeCache(raw: string) {
