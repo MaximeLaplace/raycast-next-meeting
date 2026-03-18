@@ -123,9 +123,12 @@ export function filterTodayOrTomorrow(events: CalendarEvent[]): CalendarEvent[] 
   return events.filter((e) => e.startTimestamp >= startOfTomorrow && e.startTimestamp < startOfDayAfter);
 }
 
-export function formatTimeUntil(timestamp: number): string {
-  const diffMs = timestamp * 1000 - Date.now();
-  if (diffMs <= 0) return "happening now";
+export function formatTimeUntil(startTimestamp: number, endTimestamp?: number): string {
+  const diffMs = startTimestamp * 1000 - Date.now();
+  if (diffMs <= 0) {
+    if (endTimestamp && endTimestamp * 1000 > Date.now()) return "in progress";
+    return "happening now";
+  }
 
   const totalMinutes = Math.floor(diffMs / 60_000);
   const hours = Math.floor(totalMinutes / 60);
@@ -139,5 +142,5 @@ export function formatTimeUntil(timestamp: number): string {
   if (hours > 0) {
     return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
   }
-  return `${minutes}m`;
+  return totalMinutes <= 1 ? "now" : `${minutes}m`;
 }

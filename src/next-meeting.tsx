@@ -82,7 +82,7 @@ export default function NextMeeting() {
               ...(videoLink ? [{ icon: Icon.Video, tooltip: "Video call available" }] : []),
               {
                 tag: {
-                  value: event.isAllDay ? "all day" : `in ${formatTimeUntil(event.startTimestamp)}`,
+                  value: event.isAllDay ? "all day" : (() => { const t = formatTimeUntil(event.startTimestamp, event.endTimestamp); return t === "now" || t === "in progress" ? t : `in ${t}`; })(),
                   color: getTimeColor(event),
                 },
               },

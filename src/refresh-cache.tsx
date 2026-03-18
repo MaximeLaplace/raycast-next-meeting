@@ -10,8 +10,8 @@ export default async function RefreshCache() {
     const events = parseEvents(raw);
     const next = events.find((e) => !e.isAllDay) ?? events[0];
     if (next && !next.isAllDay) {
-      const timeStr = formatTimeUntil(next.startTimestamp);
-      await updateCommandMetadata({ subtitle: `${next.title} - ${timeStr === "happening now" ? "now" : `in ${timeStr}`}` });
+      const timeStr = formatTimeUntil(next.startTimestamp, next.endTimestamp);
+      await updateCommandMetadata({ subtitle: `${next.title} - ${timeStr === "now" || timeStr === "in progress" ? timeStr : `in ${timeStr}`}` });
     } else if (next) {
       await updateCommandMetadata({ subtitle: `${next.title} - all day` });
     } else {
