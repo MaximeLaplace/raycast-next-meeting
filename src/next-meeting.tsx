@@ -14,9 +14,9 @@ function formatTime(timestamp: number): string {
 
 function extractVideoLink(text: string): string | undefined {
   const patterns = [
-    /https:\/\/meet\.google\.com\/[a-z-]+/i,
-    /https:\/\/zoom\.us\/j\/\d+/i,
-    /https:\/\/[a-z0-9]+\.zoom\.us\/j\/\d+/i,
+    /https:\/\/meet\.google\.com\/[a-z-]+(\?[^\s]*)?/i,
+    /https:\/\/zoom\.us\/j\/\d+(\?[^\s]*)?/i,
+    /https:\/\/[a-z0-9]+\.zoom\.us\/j\/\d+(\?[^\s]*)?/i,
     /https:\/\/teams\.microsoft\.com\/l\/meetup-join\/[^\s]+/i,
   ];
   for (const pattern of patterns) {
