@@ -7,7 +7,7 @@
 A [Raycast](https://raycast.com) extension that shows all your upcoming calendar meetings and how long until each one starts.
 
 <p align="center">
-  <img width="600" alt="Next Meeting extension showing upcoming calendar events in Raycast" src="https://github.com/user-attachments/assets/ac83664a-cca8-4961-8245-d3386ad54dc3" />
+  <img width="600" alt="Next Meeting extension showing upcoming calendar events in Raycast" src="metadata/next-meeting-1.png" />
 </p>
 
 ## Features
