@@ -4,7 +4,7 @@
   "title": "Next Meeting",
   "description": "See your next calendar meeting and time until it starts",
   "icon": "extension-icon.png",
-  "author": "maxime-laplace",
+  "author": "MaximeLaplace",
   "categories": ["Productivity"],
   "license": "MIT",
   "commands": [
